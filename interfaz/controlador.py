@@ -1,5 +1,6 @@
 from grafo.grafo import Grafo
 from grafo.algoritmos import AlgoritmosGrafos
+import networkx as nx
 
 class ControladorGrafo:
     def __init__(self):
@@ -32,12 +33,10 @@ class ControladorGrafo:
         
         return None
     
-    def obtener_info_grafo(self):
-        """Obtener información del grafo actual"""
-        if not self.grafo_actual:
-            return "No hay grafo activo"
-        
-        info = f"Tipo: {'Grafo'}\n"
-        info += f"Vértices: {len(self.grafo_actual.vertices)}\n"
-        info += f"Aristas: {len(self.grafo_actual.aristas)}"
-        return info
+    def exportar_a_networkx(self):
+        grafo = nx.Graph()
+        for vertice in self.grafo_actual.vertices:
+            grafo.add_node(vertice.etiqueta)
+        for aristas in self.grafo_actual.aristas:
+            grafo.add_edge(aristas.origen.etiqueta, aristas.destino.etiqueta, weight=aristas.peso)
+        return grafo

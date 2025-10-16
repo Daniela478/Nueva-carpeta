@@ -1,4 +1,4 @@
-class Vertice: 
+class Vertice:
     def __init__(self, id, etiqueta=None):
         self.id = id
         self.etiqueta = etiqueta or f"V{id}"

@@ -1,5 +1,4 @@
 from collections import deque
-import heapq
 from grafo import Grafo
 
 class AlgoritmosGrafos:
@@ -40,26 +39,60 @@ class AlgoritmosGrafos:
         return resultado
     
     @staticmethod
-    def dijkstra(grafo, inicio):
-        """Algoritmo de Dijkstra para caminos mínimos"""
-        distancias = {v: float('inf') for v in grafo.vertices}
-        distancias[inicio] = 0
-        cola_prioridad = [(0, inicio)]
-        
-        while cola_prioridad:
-            dist_actual, vertice_actual = heapq.heappop(cola_prioridad)
-            
-            if dist_actual > distancias[vertice_actual]:
-                continue
-            
-            for vecino, peso in grafo.obtener_vecinos(vertice_actual):
-                distancia = dist_actual + peso
-                
-                if distancia < distancias[vecino]:
-                    distancias[vecino] = distancia
-                    heapq.heappush(cola_prioridad, (distancia, vecino))
-        
-        return distancias
+    def prim(grafo, inicio=None):
+        """Algoritmo de Prim (sin heapq). Devuelve lista de Arista del MST y muestra su ponderación."""
+        if not grafo.vertices:
+            print("Grafo vacío.")
+            return []
+
+        # Permitir pasar etiqueta o Vertice; si no se pasa, tomar el primero.
+        if inicio is None:
+            inicio_vert = grafo.vertices[0]
+        else:
+            inicio_vert = grafo.obtener_etiqueta_vertice(inicio) if isinstance(inicio, str) else inicio
+            if inicio_vert is None:
+                inicio_vert = grafo.vertices[0]
+
+        visitados = {inicio_vert}
+        arbol_generador = []
+        ponderacion = 0
+
+        # Mientras no hayamos visitado todos los vértices intentamos agregar la arista mínima
+        while len(visitados) < len(grafo.vertices):
+            mejor_arista = None
+            mejor_peso = float('inf')
+            # Buscamos la arista de menor peso que conecte visitados con no visitados
+            for v in visitados:
+                for vecino, peso in v.vecinos:
+                    if vecino not in visitados and peso < mejor_peso:
+                        mejor_peso = peso
+                        mejor_arista = (v, vecino, peso)
+
+            if mejor_arista is None:
+                # El grafo no es conexo
+                print("El grafo no es conexo. No se puede construir un MST que cubra todos los vértices.")
+                break
+
+            origen, destino, peso = mejor_arista
+
+            # Buscar la arista real en grafo.aristas (considerando no dirigido)
+            ar = next((a for a in grafo.aristas
+                       if ((a.origen == origen and a.destino == destino) or
+                           (a.origen == destino and a.destino == origen)) and a.peso == peso),
+                      None)
+
+            # Si no se encuentra la arista (por alguna razón), crear una representación simple
+            if ar is None:
+                from arista import Arista
+                ar = Arista(-1, origen, destino, peso, etiqueta=None)
+
+            arbol_generador.append(ar)
+            ponderacion += peso
+            visitados.add(destino)
+
+        print(f"Ponderacion: {ponderacion}")
+        print(f"Arbol generador: {arbol_generador}")
+        return arbol_generador
     
     @staticmethod
     def kruskal(grafo):
@@ -70,6 +103,7 @@ class AlgoritmosGrafos:
         bosque_inicial = [{v} for v in grafo.vertices] # Lista que alberga conjuntos formados por los vertices del grafo.
         ponderacion = 0                                # Var. de control para conocer la ponderacion.
 
+        # Mostramos el bosque inicial y el numero de elementos que posee.
         print(f"Bosque actual: {bosque_inicial}...numero de elementos: {len(bosque_inicial)}")
 
         # NOTA: Inicialmente, bosque_inicial posee conjuntos separados, cada uno con un solo vertice.
@@ -80,10 +114,13 @@ class AlgoritmosGrafos:
         #       árbol más grande sin el peligro de provocar ciclos.
 
         while len(aristas_visitadas) < (len(grafo.vertices) - 1):
+
+            # Tomamos la arista de menor ponderación.
             arista_menor = min(aristas_disponibles, key=lambda a: a.peso)
 
-            origen, destino = arista_menor.obtener_vertices()
+            origen, destino = arista_menor.obtener_vertices() # Obtenemos los vértices que conecta.
 
+            # Vemos que vértices se están agarrando.
             print(origen)
             print(destino) 
 
@@ -101,12 +138,13 @@ class AlgoritmosGrafos:
                 # Unimos los conjuntos de vértices, sobreescribiendo uno de los ya existentes en
                 # bosque_inicial con el nuevo conjunto.
                 bosque_inicial[indice_primer_vertice] = bosque_inicial[indice_primer_vertice].union(bosque_inicial[indice_segundo_vertice])
-                del bosque_inicial[indice_segundo_vertice]
+                del bosque_inicial[indice_segundo_vertice] # Eliminamos uno de los conjuntos "menores".
 
                 arbol_generador.append(arista_menor)     # Añadimos la arista al árbol generador.
                 aristas_visitadas.append(arista_menor)   # Añadimos la arista a las ya visitadas.
                 aristas_disponibles.remove(arista_menor) # Quitamos la arista de las disponibles.
 
+                # Mostramos cómo va quedando el bosque y los conjuntos que tiene...
                 print(f"Bosque actual: {bosque_inicial}...numero de elementos: {len(bosque_inicial)}")
 
             else:
@@ -114,6 +152,7 @@ class AlgoritmosGrafos:
                 aristas_disponibles.remove(arista_menor) # Eliminamos la arista de las disponibles.
                 continue                                 # "Continuamos" a la siguiente iteración.
 
+        # Calculamos la ponderación.
         for a in aristas_visitadas:
             ponderacion += a.peso
 
@@ -139,35 +178,7 @@ grafo = Grafo()
 nombres_vertices = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P']
 for n in nombres_vertices:
     grafo.agregar_vertice(n)
-""" grafo.agregar_arista(grafo.vertices[0], grafo.vertices[1], 8)
-grafo.agregar_arista(grafo.vertices[0], grafo.vertices[3], 5)
-grafo.agregar_arista(grafo.vertices[0], grafo.vertices[4], 4)
-grafo.agregar_arista(grafo.vertices[1], grafo.vertices[2], 3)
-grafo.agregar_arista(grafo.vertices[1], grafo.vertices[5], 4)
-grafo.agregar_arista(grafo.vertices[1], grafo.vertices[4], 6)
-grafo.agregar_arista(grafo.vertices[2], grafo.vertices[5], 13)
-grafo.agregar_arista(grafo.vertices[2], grafo.vertices[6], 7)
-grafo.agregar_arista(grafo.vertices[3], grafo.vertices[4], 1)
-grafo.agregar_arista(grafo.vertices[3], grafo.vertices[8], 2)
-grafo.agregar_arista(grafo.vertices[3], grafo.vertices[7], 3)
-grafo.agregar_arista(grafo.vertices[4], grafo.vertices[8], 2)
-grafo.agregar_arista(grafo.vertices[4], grafo.vertices[5], 3)
-grafo.agregar_arista(grafo.vertices[5], grafo.vertices[6], 1)
-grafo.agregar_arista(grafo.vertices[5], grafo.vertices[8], 3)
-grafo.agregar_arista(grafo.vertices[5], grafo.vertices[9], 22)
-grafo.agregar_arista(grafo.vertices[6], grafo.vertices[9], 1)
-grafo.agregar_arista(grafo.vertices[6], grafo.vertices[10], 6)
-grafo.agregar_arista(grafo.vertices[7], grafo.vertices[8], 13)
-grafo.agregar_arista(grafo.vertices[7], grafo.vertices[11], 13)
-grafo.agregar_arista(grafo.vertices[8], grafo.vertices[9], 7)
-grafo.agregar_arista(grafo.vertices[8], grafo.vertices[13], 20)
-grafo.agregar_arista(grafo.vertices[8], grafo.vertices[12], 2)
-grafo.agregar_arista(grafo.vertices[8], grafo.vertices[11], 9)
-grafo.agregar_arista(grafo.vertices[9], grafo.vertices[10], 7)
-grafo.agregar_arista(grafo.vertices[9], grafo.vertices[13], 6)
-grafo.agregar_arista(grafo.vertices[10], grafo.vertices[13], 15)
-grafo.agregar_arista(grafo.vertices[11], grafo.vertices[12], 1)
-grafo.agregar_arista(grafo.vertices[12], grafo.vertices[13], 14) """
+
 
 grafo.agregar_arista("A", "B", 8)
 grafo.agregar_arista("A", "D", 5)
@@ -199,37 +210,8 @@ grafo.agregar_arista("L", "P", 15)
 grafo.agregar_arista("M", "N", 1)
 grafo.agregar_arista("N", "P", 14)
 
-# Descomentar el bloque de abajo para probar el manejo de ciclos multiples...
 
-""" grafo.agregar_arista(grafo.vertices[0], grafo.vertices[1], 1)
-grafo.agregar_arista(grafo.vertices[0], grafo.vertices[3], 1)
-grafo.agregar_arista(grafo.vertices[0], grafo.vertices[4], 1)
-grafo.agregar_arista(grafo.vertices[1], grafo.vertices[2], 1)
-grafo.agregar_arista(grafo.vertices[1], grafo.vertices[5], 1)
-grafo.agregar_arista(grafo.vertices[1], grafo.vertices[4], 1)
-grafo.agregar_arista(grafo.vertices[2], grafo.vertices[5], 1)
-grafo.agregar_arista(grafo.vertices[2], grafo.vertices[6], 1)
-grafo.agregar_arista(grafo.vertices[3], grafo.vertices[4], 1)
-grafo.agregar_arista(grafo.vertices[3], grafo.vertices[8], 1)
-grafo.agregar_arista(grafo.vertices[3], grafo.vertices[7], 1)
-grafo.agregar_arista(grafo.vertices[4], grafo.vertices[8], 1)
-grafo.agregar_arista(grafo.vertices[4], grafo.vertices[5], 1)
-grafo.agregar_arista(grafo.vertices[5], grafo.vertices[6], 1)
-grafo.agregar_arista(grafo.vertices[5], grafo.vertices[8], 1)
-grafo.agregar_arista(grafo.vertices[5], grafo.vertices[9], 1)
-grafo.agregar_arista(grafo.vertices[6], grafo.vertices[9], 1)
-grafo.agregar_arista(grafo.vertices[6], grafo.vertices[10], 1)
-grafo.agregar_arista(grafo.vertices[7], grafo.vertices[8], 1)
-grafo.agregar_arista(grafo.vertices[7], grafo.vertices[11], 1)
-grafo.agregar_arista(grafo.vertices[8], grafo.vertices[9], 1)
-grafo.agregar_arista(grafo.vertices[8], grafo.vertices[13], 1)
-grafo.agregar_arista(grafo.vertices[8], grafo.vertices[12], 1)
-grafo.agregar_arista(grafo.vertices[8], grafo.vertices[11], 1)
-grafo.agregar_arista(grafo.vertices[9], grafo.vertices[10], 1)
-grafo.agregar_arista(grafo.vertices[9], grafo.vertices[13], 1)
-grafo.agregar_arista(grafo.vertices[10], grafo.vertices[13], 1)
-grafo.agregar_arista(grafo.vertices[11], grafo.vertices[12], 1)
-grafo.agregar_arista(grafo.vertices[12], grafo.vertices[13], 1) """
 print(grafo)
 
 AlgoritmosGrafos.kruskal(grafo)
+AlgoritmosGrafos.prim(grafo)

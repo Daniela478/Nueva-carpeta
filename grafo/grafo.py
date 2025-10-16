@@ -1,5 +1,5 @@
-from .vertice import Vertice
-from .arista import Arista
+from grafo.vertice import Vertice
+from grafo.arista import Arista
 
 class Grafo:
     def __init__(self):
@@ -20,13 +20,14 @@ class Grafo:
         destino = self.obtener_etiqueta_vertice(destino)
         arista_id = self.contador_id_ari
 
-        if origen is '' or destino is '':
+        if origen is None or destino is None:
             raise ValueError("Vértices no existen")
         
         arista = Arista(arista_id, origen, destino, peso, etiqueta)
         self.aristas.append(arista)
         self.contador_id_ari += 1
         
+        # Agregar vecinos
         indice_vertice_origen = self.vertices.index(origen)
         indice_vertice_destino = self.vertices.index(destino)
         self.vertices[indice_vertice_origen].agregar_vecino(destino, peso)

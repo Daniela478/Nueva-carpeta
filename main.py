@@ -1,22 +1,21 @@
 import tkinter as tk
 from interfaz.ventana_principal import VentanaPrincipal
-from grafo.algoritmos import AlgoritmosGrafos
 
 def main():
     """Función principal que inicia la aplicación"""
     try:
-        root = tk.Tk()
-        root.title("Proyectito de Estructuras Discreta 2")
+        # Crear ventana principal
+        aplicacion_grafos_principal = tk.Tk()
+        aplicacion_grafos_principal.title("Proyectito de Estructuras Discreta 2")
         
-        app = VentanaPrincipal(root)
-
-        AlgoritmosGrafos
+        # Crear la aplicación
+        app = VentanaPrincipal(aplicacion_grafos_principal)
         
-        root.geometry("800x600")
+        # Centrar la ventana
+        aplicacion_grafos_principal.eval('tk::PlaceWindow . center')
         
-        root.eval('tk::PlaceWindow . center')
-        
-        root.mainloop()
+        # Iniciar el loop principal
+        aplicacion_grafos_principal.mainloop()
         
     except Exception as e:
         print(f"Error al iniciar la aplicación: {e}")

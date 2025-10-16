@@ -3,10 +3,12 @@ from tkinter import ttk, messagebox, scrolledtext
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+# Importar nuestros módulos existentes
 from interfaz.controlador import ControladorGrafo
 from interfaz.visualizador import Visualizador
 
 
+# Estilos básicos
 COLOR_FONDO = "#ecf0f1"
 COLOR_PRIMARIO = "#2c3e50"
 COLOR_ACENTO = "#3498db"
@@ -24,289 +26,219 @@ class VentanaPrincipal:
         self.pantalla.geometry("1200x1200")
         self.pantalla.configure(bg=COLOR_FONDO)
         
+        # Usar el controlador existente
         self.controlador = ControladorGrafo()
-        self.visualizador = None
+        self.visualizador = Visualizador(layout='spring')
+
+        self._cargar_grafo_inicial()  # Primero carga el grafo
+        self.configurar_interfaz()    # Luego configura la interfaz y dibuja
+        self.visualizador.dibujar_grafo(self.controlador.grafo_actual)
+
+
+
+
+
+
         
-        self._configurar_interfaz()
-        
-    def _configurar_interfaz(self):
-       
+    def configurar_interfaz(self):
+        # Crear Pestañas
         self.pestañas = ttk.Notebook(self.pantalla)
         self.pestañas.pack(fill='both', expand=True, padx=10, pady=10)
         
+        # Pestaña 1: Creación de Grafos
         self.pestaña1 = ttk.Frame(self.pestañas)
         self.pestañas.add(self.pestaña1, text="Grafo actual")
 
         self.pestaña2 = ttk.Frame(self.pestañas)
-        self.pestañas.add(self.pestaña2, text="Algoritmo bss")
+        self.pestañas.add(self.pestaña2, text="Algoritmo BFS")
 
         self.pestaña3 = ttk.Frame(self.pestañas)
-        self.pestañas.add(self.pestaña3, text="Algoritmo bfs")
+        self.pestañas.add(self.pestaña3, text="Algoritmo DFS")
         
         
         self.pestaña4 = ttk.Frame(self.pestañas)
-        self.pestañas.add(self.pestaña4, text='Algoritmo kruskal')
+        self.pestañas.add(self.pestaña4, text='Algoritmo Kruskal')
         
 
         self.pestaña5 = ttk.Frame(self.pestañas)
-        self.pestañas.add(self.pestaña5, text='Algoritmo kruskal')
+        self.pestañas.add(self.pestaña5, text='Algoritmo Prim')
         
-        self._configurar_pestaña_creacion()
-        self._configurar_pestaña_teoria()
-        self._configurar_pestaña_visualizacion()
-        
-    def _configurar_pestaña_creacion(self):
+        # Configurar cada pestaña
+        self.configurar_pestaña_creacion()
+        self.configurar_pestaña_bfs()
+        self.configurar_pestaña_dfs()
+        self.configurar_pestaña_kruskal()
+        self.configurar_pestaña_prim()
+        self.insertar_grafo_en_pestaña(self.pestaña1)
+        self.insertar_grafo_en_pestaña(self.pestaña2)  # BFS
+        self.insertar_grafo_en_pestaña(self.pestaña3)  # DFS
+        self.insertar_grafo_en_pestaña(self.pestaña4)  # Kruskal
+        self.insertar_grafo_en_pestaña(self.pestaña5)  # Prim
 
-        main_frame = ttk.Frame(self.pestaña1)
-        main_frame.pack(fill='both', expand=True, padx=20, pady=20)
         
-        titulo = tk.Label(main_frame, bg=COLOR_FONDO, fg=COLOR_PRIMARIO,
+    def configurar_pestaña_creacion(self):
+        # Frame principal
+        ventana_grafo = ttk.Frame(self.pestaña1)
+        ventana_grafo.pack(fill='both', expand=True, padx=20, pady=20)
+
+        
+        # Título
+        titulo = tk.Label(ventana_grafo, bg=COLOR_FONDO, fg=COLOR_PRIMARIO,
                              font=FUENTE_TITULO, text="Nuestro Grafo es el siguiente")
         titulo.pack(pady=10)
-        
+        # Frame para mostrar el grafo
+        self.pantalla_grafo_visto = ttk.Frame(self.pestaña1)
+        self.pantalla_grafo_visto.pack(fill='both', expand=True, padx=10, pady=10)
 
         
-        self.texto_enunciado = scrolledtext.ScrolledText(
-            main_frame, 
-            bg="white", fg=COLOR_TEXTO, font=FUENTE_NORMAL,
-            height=8, width=80, relief="sunken", bd=1
-        )
-        self.texto_enunciado.pack(pady=10, fill='x')
+        # Botones de acción
+        botones_principales = ttk.Frame(ventana_grafo)
+        botones_principales.pack(pady=20)
         
-        frame_botones = ttk.Frame(main_frame)
-        frame_botones.pack(pady=20)
-        
-        boton_agregar_vertice = tk.Button(frame_botones, bg=COLOR_ACENTO, fg=COLOR_TEXTO_CLARO,
+        boton_agregar_vertice = tk.Button(botones_principales, bg=COLOR_ACENTO, fg=COLOR_TEXTO_CLARO,
                                font=FUENTE_NORMAL, text="Agregar vertice", 
-                               command=self._procesar_enunciado)
+                               command=self.agregar_vertice)
         boton_agregar_vertice.pack(side='left', padx=10)
         
-        boton_agregar_arista = tk.Button(frame_botones, bg="#34495e", fg=COLOR_TEXTO_CLARO,
+        boton_agregar_arista = tk.Button(botones_principales, bg="#34495e", fg=COLOR_TEXTO_CLARO,
                               font=FUENTE_NORMAL, text="Agregar arista", 
-                              command=self._limpiar_enunciado)
+                              command=self.agregar_arista)
         boton_agregar_arista.pack(side='left', padx=10)
 
-        boton_modificar_vertice = tk.Button(frame_botones, bg="#34495e", fg=COLOR_TEXTO_CLARO,
+        boton_modificar_vertice = tk.Button(botones_principales, bg="#34495e", fg=COLOR_TEXTO_CLARO,
                               font=FUENTE_NORMAL, text="Modificar vertice", 
-                              command=self._limpiar_enunciado)
+                              command=self.modificar_vertice)
         boton_modificar_vertice.pack(side='left', padx=10)
 
-        boton_modificar_arista = tk.Button(frame_botones, bg="#34495e", fg=COLOR_TEXTO_CLARO,
+        boton_modificar_arista = tk.Button(botones_principales, bg="#34495e", fg=COLOR_TEXTO_CLARO,
                               font=FUENTE_NORMAL, text="Modificar arista", 
-                              command=self._limpiar_enunciado)
+                              command=self.modificar_arista)
         boton_modificar_arista.pack(side='left', padx=10)
 
-        boton_eliminar_arista = tk.Button(frame_botones, bg="#34495e", fg=COLOR_TEXTO_CLARO,
+        boton_eliminar_vertice = tk.Button(botones_principales, bg="#34495e", fg=COLOR_TEXTO_CLARO,
                               font=FUENTE_NORMAL, text="Eliminar vertice", 
-                              command=self._limpiar_enunciado)
-        boton_eliminar_arista.pack(side='left', padx=10)
+                              command=self.eliminar_vertice)
+        boton_eliminar_vertice.pack(side='left', padx=10)
 
-        boton_eliminar_arista = tk.Button(frame_botones, bg="#34495e", fg=COLOR_TEXTO_CLARO,
+        boton_eliminar_arista = tk.Button(botones_principales, bg="#34495e", fg=COLOR_TEXTO_CLARO,
                               font=FUENTE_NORMAL, text="Eliminar arista", 
-                              command=self._limpiar_enunciado)
+                              command=self.eliminar_arista)
         boton_eliminar_arista.pack(side='left', padx=10)
 
-        # Área de información del grafo
-        self.frame_info = ttk.LabelFrame(main_frame, text="Información del Grafo")
-        self.frame_info.pack(pady=10, fill='x')
-        
-        self.lbl_info = tk.Label(self.frame_info, bg=COLOR_FONDO, fg=COLOR_TEXTO,
-                                font=FUENTE_NORMAL, text="No hay grafo creado")
-        self.lbl_info.pack(pady=10)
-        
-    def _configurar_pestaña_teoria(self):
-        main_frame = ttk.Frame(self.frame_teoria)
-        main_frame.pack(fill='both', expand=True, padx=20, pady=20)
-        
-        lbl_titulo = tk.Label(main_frame, bg=COLOR_FONDO, fg=COLOR_PRIMARIO,
-                             font=FUENTE_TITULO, text="Consultas de Teoría de Grafos")
-        lbl_titulo.pack(pady=10)
+    def configurar_pestaña_bfs(self):
+        ventana_grafo = ttk.Frame(self.pestaña2)
+        ventana_grafo.pack(fill='both', expand=True, padx=20, pady=20)
+        titulo = tk.Label(ventana_grafo, bg=COLOR_FONDO, fg=COLOR_PRIMARIO,
+                             font=FUENTE_TITULO, text="Algoritmo BSF")
+        titulo.pack(pady=10)
 
-        lbl_consulta = tk.Label(main_frame, bg=COLOR_FONDO, fg=COLOR_TEXTO,
-                               font=FUENTE_NORMAL,
-                               text="Haz una pregunta sobre teoría de grafos:")
-        lbl_consulta.pack(pady=5)
-        
-        self.entrada_consulta = tk.Entry(main_frame, bg="white", fg=COLOR_TEXTO,
-                                       font=FUENTE_NORMAL, width=60, relief="sunken", bd=1)
-        self.entrada_consulta.pack(pady=10)
-        self.entrada_consulta.bind('<Return>', lambda e: self._responder_consulta())
-        
-        btn_consultar = tk.Button(main_frame, bg=COLOR_ACENTO, fg=COLOR_TEXTO_CLARO,
-                                font=FUENTE_NORMAL, text="🤖 Consultar", 
-                                command=self._responder_consulta)
-        btn_consultar.pack(pady=10)
-        
-        # Área de respuesta
-        lbl_respuesta = tk.Label(main_frame, bg=COLOR_FONDO, fg=COLOR_TEXTO,
-                                font=FUENTE_NORMAL, text="Respuesta:")
-        lbl_respuesta.pack(pady=5, anchor='w')
-        
-        self.texto_respuesta = scrolledtext.ScrolledText(
-            main_frame, 
-            bg="white", fg=COLOR_TEXTO, font=FUENTE_MONOSPACE,
-            height=15, width=80, relief="sunken", bd=1, wrap="word"
-        )
-        self.texto_respuesta.pack(pady=10, fill='both', expand=True)
-        self.texto_respuesta.config(state='disabled')
-        
-    def _configurar_pestaña_visualizacion(self):
-        main_frame = ttk.Frame(self.frame_visualizacion)
-        main_frame.pack(fill='both', expand=True, padx=20, pady=20)
-       
-        lbl_titulo = tk.Label(main_frame, bg=COLOR_FONDO, fg=COLOR_PRIMARIO,
-                             font=FUENTE_TITULO, text="Visualización del Grafo")
-        lbl_titulo.pack(pady=10)
-        
-        frame_controles = ttk.Frame(main_frame)
-        frame_controles.pack(pady=10, fill='x')
-        
-        lbl_layout = tk.Label(frame_controles, bg=COLOR_FONDO, fg=COLOR_TEXTO,
-                            font=FUENTE_NORMAL, text="Layout:")
-        lbl_layout.pack(side='left', padx=5)
-        
-        self.combo_layout = ttk.Combobox(frame_controles, 
-                                       values=['spring', 'circular', 'random'],
-                                       width=15)
-        self.combo_layout.pack(side='left', padx=5)
-        self.combo_layout.set('spring')
-        
-        btn_visualizar = tk.Button(frame_controles, bg=COLOR_ACENTO, fg=COLOR_TEXTO_CLARO,
-                                 font=FUENTE_NORMAL, text="📊 Visualizar", 
-                                 command=self._visualizar_grafo)
-        btn_visualizar.pack(side='left', padx=10)
-        
-        btn_guardar = tk.Button(frame_controles, bg="#34495e", fg=COLOR_TEXTO_CLARO,
-                              font=FUENTE_NORMAL, text="💾 Guardar Imagen", 
-                              command=self._guardar_imagen)
-        btn_guardar.pack(side='left', padx=10)
-        
-        frame_algoritmos = ttk.Frame(main_frame)
-        frame_algoritmos.pack(pady=10, fill='x')
-        
-        lbl_algoritmos = tk.Label(frame_algoritmos, bg=COLOR_FONDO, fg=COLOR_TEXTO,
-                                 font=FUENTE_NORMAL, text="Algoritmos:")
-        lbl_algoritmos.pack(side='left', padx=5)
-        
-        btn_bfs = tk.Button(frame_algoritmos, bg="#27ae60", fg=COLOR_TEXTO_CLARO,
-                          font=FUENTE_NORMAL, text="BFS", 
-                          command=lambda: self._ejecutar_algoritmo('bfs'))
-        btn_bfs.pack(side='left', padx=5)
-        
-        btn_dfs = tk.Button(frame_algoritmos, bg="#27ae60", fg=COLOR_TEXTO_CLARO,
-                          font=FUENTE_NORMAL, text="DFS", 
-                          command=lambda: self._ejecutar_algoritmo('dfs'))
-        btn_dfs.pack(side='left', padx=5)
-        
-        btn_dijkstra = tk.Button(frame_algoritmos, bg="#27ae60", fg=COLOR_TEXTO_CLARO,
-                               font=FUENTE_NORMAL, text="Kruskal", 
-                               command=lambda: self._ejecutar_algoritmo('dijkstra'))
-        btn_dijkstra.pack(side='left', padx=5)
+        self.pantalla_grafo_visto = ttk.Frame(self.pestaña2)
+        self.pantalla_grafo_visto.pack(fill='both', expand=True, padx=10, pady=10)        
+    def configurar_pestaña_dfs(self):
+        ventana_grafo = ttk.Frame(self.pestaña3)
+        ventana_grafo.pack(fill='both', expand=True, padx=20, pady=20)
+        titulo = tk.Label(ventana_grafo, bg=COLOR_FONDO, fg=COLOR_PRIMARIO,
+                             font=FUENTE_TITULO, text="Algoritmo DFS")
+        titulo.pack(pady=10)
+        self.pantalla_grafo_visto = ttk.Frame(self.pestaña3)
+        self.pantalla_grafo_visto.pack(fill='both', expand=True, padx=10, pady=10)        
+    def configurar_pestaña_kruskal(self):
+        ventana_grafo = ttk.Frame(self.pestaña4)
+        ventana_grafo.pack(fill='both', expand=True, padx=20, pady=20)
+        titulo = tk.Label(ventana_grafo, bg=COLOR_FONDO, fg=COLOR_PRIMARIO,
+                             font=FUENTE_TITULO, text="Algoritmo Kruskal")
+        titulo.pack(pady=10)
+        self.pantalla_grafo_visto = ttk.Frame(self.pestaña4)
+        self.pantalla_grafo_visto.pack(fill='both', expand=True, padx=10, pady=10)
+    def configurar_pestaña_prim(self):
+        ventana_grafo = ttk.Frame(self.pestaña5)
+        ventana_grafo.pack(fill='both', expand=True, padx=20, pady=20)
+        titulo = tk.Label(ventana_grafo, bg=COLOR_FONDO, fg=COLOR_PRIMARIO,
+                             font=FUENTE_TITULO, text="Algoritmo Prim")
+        titulo.pack(pady=10)
+        self.pantalla_grafo_visto = ttk.Frame(self.pestaña5)
+        self.pantalla_grafo_visto.pack(fill='both', expand=True, padx=10, pady=10)
 
-        btn_dijkstra = tk.Button(frame_algoritmos, bg="#27ae60", fg=COLOR_TEXTO_CLARO,
-                               font=FUENTE_NORMAL, text="Kruskal", 
-                               command=lambda: self._ejecutar_algoritmo('Prim'))
-        btn_dijkstra.pack(side='left', padx=5)
-        
-    
-        self.frame_grafico = ttk.Frame(main_frame)
-        self.frame_grafico.pack(pady=10, fill='both', expand=True)
-        
-        self.lbl_grafico_vacio = tk.Label(self.frame_grafico, bg=COLOR_FONDO, fg=COLOR_TEXTO,
-                                         font=FUENTE_NORMAL,
-                                         text="No hay grafo para visualizar.\nCrea un grafo en la pestaña 'Crear Grafo'")
-        self.lbl_grafico_vacio.pack(expand=True)
-        
-        self.canvas = None
-        self.figura_actual = None
 
-    def _procesar_enunciado(self):
-        """Procesa el enunciado y crea el grafo"""
-        enunciado = self.texto_enunciado.get(1.0, tk.END).strip()
+    def insertar_grafo_en_pestaña(self, pestaña):
+        pantalla = ttk.Frame(pestaña)
+        pantalla.pack(fill='both', expand=True, padx=10, pady=10)
+
+        self.visualizador.dibujar_grafo(self.controlador.grafo_actual)
+
+        canvas = FigureCanvasTkAgg(self.visualizador.figura, master=pantalla)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill='both', expand=True)
+
+
+
         
-        if not enunciado:
-            messagebox.showwarning("Advertencia", "Por favor, escribe un enunciado.")
-            return
-        
-        try:
-            grafo = self.procesador.procesar_enunciado(enunciado)
-            self.controlador.grafo_actual = grafo
-            self._actualizar_info_grafo()
-            
-        except Exception as e:
-            messagebox.showerror("Error", f"Error al procesar: {str(e)}")
-    
-    def _actualizar_info_grafo(self):
-        """Actualiza la información del grafo en la interfaz"""
-        if self.controlador.grafo_actual:
-            grafo = self.controlador.grafo_actual
-            info = f"Tipo: {'Grafo'}\n"
-            info += f"Vértices: {len(grafo.vertices)}\n"
-            info += f"Aristas: {len(grafo.aristas)}"
-            self.lbl_info.config(text=info)
-            messagebox.showinfo("Éxito", "Grafo creado exitosamente!")
-        else:
-            self.lbl_info.config(text="No hay grafo creado")
-    
-    def _limpiar_enunciado(self):
-        """Limpia el área de texto"""
-        self.texto_enunciado.delete(1.0, tk.END)
-    
-    
-    def _visualizar_grafo(self):
-        """Visualiza el grafo actual"""
+    def visualizar_grafo(self):
         if not self.controlador.grafo_actual:
-            messagebox.showwarning("Advertencia", "No hay grafo para visualizar.")
+            messagebox.showwarning("Advertencia", "No tenemos grafo :(.")
             return
-        
-        try:
-            for widget in self.frame_grafico.winfo_children():
-                widget.destroy()
-            
-            self.visualizador = Visualizador()
-            layout = self.combo_layout.get()
-            self.visualizador.dibujar_grafo(self.controlador.grafo_actual, layout=layout)
-            
-            self.canvas = FigureCanvasTkAgg(self.visualizador.fig, master=self.frame_grafico)
-            self.canvas.draw()
-            self.canvas.get_tk_widget().pack(fill='both', expand=True)
-            
-            self.figura_actual = self.visualizador.fig
-            
-        except Exception as e:
-            messagebox.showerror("Error", f"Error al visualizar: {str(e)}")
+
+        for widget in self.pantalla_grafo_visto.winfo_children():
+            widget.destroy()
+
+        self.visualizador.dibujar_grafo(self.controlador.grafo_actual)
+
+
+        canvas = FigureCanvasTkAgg(self.visualizador.figura, master=self.pantalla_grafo_visto)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill='both', expand=True)
+
+
+
+    def agregar_vertice(self):
+        pass
     
-    def _guardar_imagen(self):
-        """Guarda la imagen del grafo"""
-        if not self.figura_actual:
-            messagebox.showwarning("Advertencia", "No hay gráfico para guardar.")
-            return
-        
-        try:
-            self.visualizador.guardar_imagen("grafo_generado.png")
-            messagebox.showinfo("Éxito", "Imagen guardada como 'grafo_generado.png'")
-        except Exception as e:
-            messagebox.showerror("Error", f"Error al guardar: {str(e)}")
+    def agregar_arista(self):
+        pass
+    def eliminar_vertice(self):
+        pass
+    def eliminar_arista(self):
+        pass
+    def modificar_vertice(self):
+        pass
+    def modificar_arista(self):
+        pass
     
-    def _ejecutar_algoritmo(self, algoritmo):
-        """Ejecuta un algoritmo sobre el grafo actual"""
-        if not self.controlador.grafo_actual:
-            messagebox.showwarning("Advertencia", "No hay grafo para ejecutar algoritmos.")
-            return
+    def _cargar_grafo_inicial(self):
+        grafo = self.controlador.crear_grafo()
         
-        try:
-            if self.controlador.grafo_actual.vertices:
-                primer_vertice = list(self.controlador.grafo_actual.vertices.keys())[0]
-                resultado = self.controlador.ejecutar_algoritmo(algoritmo, inicio=primer_vertice)
-                
-                if resultado:
-                    messagebox.showinfo(f"Resultado {algoritmo.upper()}", 
-                                      f"Resultado: {resultado}")
-                else:
-                    messagebox.showwarning("Algoritmo", 
-                                         f"No se pudo ejecutar {algoritmo}")
-            else:
-                messagebox.showwarning("Algoritmo", "El grafo no tiene vértices")
-                
-        except Exception as e:
-            messagebox.showerror("Error", f"Error al ejecutar {algoritmo}: {str(e)}")
+        nombres_vertices = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P']
+        for n in nombres_vertices:
+            grafo.agregar_vertice(n)
+
+        grafo.agregar_arista("A", "B", 8)
+        grafo.agregar_arista("A", "D", 5)
+        grafo.agregar_arista("A", "E", 4)
+        grafo.agregar_arista("B", "C", 3)
+        grafo.agregar_arista("B", "F", 4)
+        grafo.agregar_arista("B", "E", 6)
+        grafo.agregar_arista("C", "F", 13)
+        grafo.agregar_arista("C", "G", 7)
+        grafo.agregar_arista("D", "E", 1)
+        grafo.agregar_arista("D", "I", 2)
+        grafo.agregar_arista("D", "H", 3)
+        grafo.agregar_arista("E", "I", 2)
+        grafo.agregar_arista("E", "F", 3)
+        grafo.agregar_arista("F", "G", 1)
+        grafo.agregar_arista("F", "I", 3)
+        grafo.agregar_arista("F", "K", 22)
+        grafo.agregar_arista("G", "K", 1)
+        grafo.agregar_arista("G", "L", 6)
+        grafo.agregar_arista("H", "M", 13)
+        grafo.agregar_arista("H", "I", 13)
+        grafo.agregar_arista("I", "K", 7)
+        grafo.agregar_arista("I", "P", 20)
+        grafo.agregar_arista("I", "N", 2)
+        grafo.agregar_arista("I", "M", 9)
+        grafo.agregar_arista("K", "L", 7)
+        grafo.agregar_arista("K", "P", 6)
+        grafo.agregar_arista("L", "P", 15)
+        grafo.agregar_arista("M", "N", 1)
+        grafo.agregar_arista("N", "P", 14)
+
+    
