@@ -15,15 +15,15 @@ COLOR_ACENTO = "#3498db"
 COLOR_TEXTO = "#474f57"
 COLOR_TEXTO_CLARO = "#ffffff"
 
-FUENTE_TITULO = ("Arial", 16, "bold")
-FUENTE_NORMAL = ("Arial", 10)
+FUENTE_TITULO = ("Arial", 20, "bold")
+FUENTE_NORMAL = ("Arial", 14, "bold")
 FUENTE_MONOSPACE = ("Courier New", 9)
 
 class VentanaPrincipal:
     def __init__(self, pantalla):
         self.pantalla = pantalla
         self.pantalla.title("Proyecto de Grafo")
-        self.pantalla.geometry("1200x1200")
+        self.pantalla.geometry("1280x920")
         self.pantalla.configure(bg=COLOR_FONDO)
         
         # Usar el controlador existente
@@ -55,11 +55,9 @@ class VentanaPrincipal:
         self.pestaña3 = ttk.Frame(self.pestañas)
         self.pestañas.add(self.pestaña3, text="Algoritmo DFS")
         
-        
         self.pestaña4 = ttk.Frame(self.pestañas)
         self.pestañas.add(self.pestaña4, text='Algoritmo Kruskal')
         
-
         self.pestaña5 = ttk.Frame(self.pestañas)
         self.pestañas.add(self.pestaña5, text='Algoritmo Prim')
         
@@ -98,32 +96,32 @@ class VentanaPrincipal:
         boton_agregar_vertice = tk.Button(botones_principales, bg=COLOR_ACENTO, fg=COLOR_TEXTO_CLARO,
                                font=FUENTE_NORMAL, text="Agregar vertice", 
                                command=self.agregar_vertice)
-        boton_agregar_vertice.pack(side='left', padx=10)
+        boton_agregar_vertice.pack(side='left', padx=10, ipadx=10, ipady=10)
         
         boton_agregar_arista = tk.Button(botones_principales, bg="#34495e", fg=COLOR_TEXTO_CLARO,
                               font=FUENTE_NORMAL, text="Agregar arista", 
                               command=self.agregar_arista)
-        boton_agregar_arista.pack(side='left', padx=10)
+        boton_agregar_arista.pack(side='left', padx=10, ipadx=10, ipady=10)
 
         boton_modificar_vertice = tk.Button(botones_principales, bg="#34495e", fg=COLOR_TEXTO_CLARO,
                               font=FUENTE_NORMAL, text="Modificar vertice", 
                               command=self.modificar_vertice)
-        boton_modificar_vertice.pack(side='left', padx=10)
+        boton_modificar_vertice.pack(side='left', padx=10, ipadx=10, ipady=10)
 
         boton_modificar_arista = tk.Button(botones_principales, bg="#34495e", fg=COLOR_TEXTO_CLARO,
                               font=FUENTE_NORMAL, text="Modificar arista", 
                               command=self.modificar_arista)
-        boton_modificar_arista.pack(side='left', padx=10)
+        boton_modificar_arista.pack(side='left', padx=10, ipadx=10, ipady=10)
 
         boton_eliminar_vertice = tk.Button(botones_principales, bg="#34495e", fg=COLOR_TEXTO_CLARO,
                               font=FUENTE_NORMAL, text="Eliminar vertice", 
                               command=self.eliminar_vertice)
-        boton_eliminar_vertice.pack(side='left', padx=10)
+        boton_eliminar_vertice.pack(side='left', padx=10, ipadx=10, ipady=10)
 
         boton_eliminar_arista = tk.Button(botones_principales, bg="#34495e", fg=COLOR_TEXTO_CLARO,
                               font=FUENTE_NORMAL, text="Eliminar arista", 
                               command=self.eliminar_arista)
-        boton_eliminar_arista.pack(side='left', padx=10)
+        boton_eliminar_arista.pack(side='left', padx=10, ipadx=10, ipady=10)
 
     def configurar_pestaña_bfs(self):
         ventana_grafo = ttk.Frame(self.pestaña2)
@@ -205,40 +203,40 @@ class VentanaPrincipal:
         pass
     
     def _cargar_grafo_inicial(self):
-        grafo = self.controlador.crear_grafo()
+        # grafo = self.controlador.crear_grafo()
+        self.controlador.crear_grafo()
         
         nombres_vertices = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P']
         for n in nombres_vertices:
-            grafo.agregar_vertice(n)
+            self.controlador.grafo_actual.agregar_vertice(n)
 
-        grafo.agregar_arista("A", "B", 8)
-        grafo.agregar_arista("A", "D", 5)
-        grafo.agregar_arista("A", "E", 4)
-        grafo.agregar_arista("B", "C", 3)
-        grafo.agregar_arista("B", "F", 4)
-        grafo.agregar_arista("B", "E", 6)
-        grafo.agregar_arista("C", "F", 13)
-        grafo.agregar_arista("C", "G", 7)
-        grafo.agregar_arista("D", "E", 1)
-        grafo.agregar_arista("D", "I", 2)
-        grafo.agregar_arista("D", "H", 3)
-        grafo.agregar_arista("E", "I", 2)
-        grafo.agregar_arista("E", "F", 3)
-        grafo.agregar_arista("F", "G", 1)
-        grafo.agregar_arista("F", "I", 3)
-        grafo.agregar_arista("F", "K", 22)
-        grafo.agregar_arista("G", "K", 1)
-        grafo.agregar_arista("G", "L", 6)
-        grafo.agregar_arista("H", "M", 13)
-        grafo.agregar_arista("H", "I", 13)
-        grafo.agregar_arista("I", "K", 7)
-        grafo.agregar_arista("I", "P", 20)
-        grafo.agregar_arista("I", "N", 2)
-        grafo.agregar_arista("I", "M", 9)
-        grafo.agregar_arista("K", "L", 7)
-        grafo.agregar_arista("K", "P", 6)
-        grafo.agregar_arista("L", "P", 15)
-        grafo.agregar_arista("M", "N", 1)
-        grafo.agregar_arista("N", "P", 14)
-
+        self.controlador.grafo_actual.agregar_arista("A", "B", 8)
+        self.controlador.grafo_actual.agregar_arista("A", "D", 5)
+        self.controlador.grafo_actual.agregar_arista("A", "E", 4)
+        self.controlador.grafo_actual.agregar_arista("B", "C", 3)
+        self.controlador.grafo_actual.agregar_arista("B", "F", 4)
+        self.controlador.grafo_actual.agregar_arista("B", "E", 6)
+        self.controlador.grafo_actual.agregar_arista("C", "F", 13)
+        self.controlador.grafo_actual.agregar_arista("C", "G", 7)
+        self.controlador.grafo_actual.agregar_arista("D", "E", 1)
+        self.controlador.grafo_actual.agregar_arista("D", "I", 2)
+        self.controlador.grafo_actual.agregar_arista("D", "H", 3)
+        self.controlador.grafo_actual.agregar_arista("E", "I", 2)
+        self.controlador.grafo_actual.agregar_arista("E", "F", 3)
+        self.controlador.grafo_actual.agregar_arista("F", "G", 1)
+        self.controlador.grafo_actual.agregar_arista("F", "I", 3)
+        self.controlador.grafo_actual.agregar_arista("F", "K", 22)
+        self.controlador.grafo_actual.agregar_arista("G", "K", 1)
+        self.controlador.grafo_actual.agregar_arista("G", "L", 6)
+        self.controlador.grafo_actual.agregar_arista("H", "M", 13)
+        self.controlador.grafo_actual.agregar_arista("H", "I", 13)
+        self.controlador.grafo_actual.agregar_arista("I", "K", 7)
+        self.controlador.grafo_actual.agregar_arista("I", "P", 20)
+        self.controlador.grafo_actual.agregar_arista("I", "N", 2)
+        self.controlador.grafo_actual.agregar_arista("I", "M", 9)
+        self.controlador.grafo_actual.agregar_arista("K", "L", 7)
+        self.controlador.grafo_actual.agregar_arista("K", "P", 6)
+        self.controlador.grafo_actual.agregar_arista("L", "P", 15)
+        self.controlador.grafo_actual.agregar_arista("M", "N", 1)
+        self.controlador.grafo_actual.agregar_arista("N", "P", 14)
     
